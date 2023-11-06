@@ -37,7 +37,7 @@ app.use(express.json())
 app.use(cors(corsOptions))
 
 //Puertos
-const PORT = 5000
+const PORT = 5010
 app.listen(PORT, () => {
     console.log(`Escuchando en el Puerto: ${PORT}`)
 })
