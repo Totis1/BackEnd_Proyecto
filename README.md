@@ -9,3 +9,6 @@ Se implementaron las rutas para CRUD de eventos
 
 # Cambios 21/11
 Se implemento un auto-id para la tabla de eventos y usuarios, ademas se corrigieron todas las rutas respectivas
+
+# Cambios 22/11
+Se implemento una ruta para el login
