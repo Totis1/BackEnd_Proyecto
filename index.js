@@ -279,6 +279,8 @@ app.post('/eliminarusuario', (req, res) => {
         })
 })
 
+//--------------------------- Ruta para Ventas ----------------------------------------------------------
+
 //Puertos
 const PORT = 5000
 app.listen(PORT, () => {
