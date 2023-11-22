@@ -173,6 +173,58 @@ app.post('/eliminarevento', (req, res) =>{
 
 //-----------------------------Rutas para Usuarios-----------------------------
 
+//Ruta de Login 
+app.post('/login', async(req, res) => {
+    const { Correo, Contraseña } = req.body
+    if (!Correo || !Contraseña ) {
+        res.json({
+            'alert': 'Faltan Datos'
+        })
+    }
+
+    const usuarios = collection(db, "usuarios")
+    const q = query(usuarios, where("Correo", "==", Correo))
+    const querylog = await getDocs(q)
+    if(querylog.empty){
+        return res.status(400).json({ 'alert': 'Correo Incorrecto' })
+    } else {
+        let returnData = []
+        querylog.forEach((doc) => {
+            returnData = (doc.data())
+        })
+        if (returnData.Contraseña === Contraseña && returnData.Rol == 'Usuario') {
+            res.json({
+                'alert': 'success',
+                'data': returnData
+            })
+        } else{
+            if (returnData.Contraseña != Contraseña)
+                return res.status(400).json({ 'alert': 'Contraseña Incorrecta' })
+        }
+    }
+    /*    
+    getDoc(doc(usuarios, Correo))
+        .then((usuario) => {
+            console.log(usuario.data())
+            if (!usuario.exists()){
+                return res.status(400).json({ 'alert' : 'Correo no registrado'})
+            } else {
+                //Aqui se puede encryptar y desencryptar
+                if (usuario.data().Contraseña === Contraseña && usuario.data().Rol == 'Usuario'){
+                    let data = usuario.data()
+                    res.json({
+                        'alert' : 'succes',
+                        Nombre : data.Nombre_usuario,
+                        Apellido : data.Apellido_usuario,
+                        Correo : data.Correo
+                    })
+                } else {
+                    return res.status(400).json({ 'alert': 'Datos Incorrectos' })
+                }
+            }
+        })*/
+})
+
 // Ruta para insertar un usuario
 app.post('/insertarusuario', async(req, res) => {
     const { Nombre_usuario, Apellido_usuario, Correo, Contraseña, 
