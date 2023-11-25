@@ -58,7 +58,7 @@ app.get('/recuperarid', async(req, res) => {
 
 //Ruta para insertar un evento
 app.post('/insertarevento', async(req, res) =>{
-    const {Nombre_eve, Ponente, Descripcion, Fecha, Lugar, N_horas,T_horas,
+    const {Nombre_eve, Ponente, Descripcion, Registro, Fecha, Lugar, N_horas,T_horas,
            hora_evento, validacion } = req.body
     const eventos = collection (db, "eventos")
     const lastid = await getDocs(eventos)  
@@ -77,7 +77,7 @@ app.post('/insertarevento', async(req, res) =>{
     const id_evento = "" + id_evento1
     
     getDoc(doc(eventos, id_evento)).then(evento =>{
-        if (!id_evento || !Nombre_eve || !Ponente || !Descripcion || !Fecha || !Lugar || !N_horas || !T_horas || !hora_evento || !validacion) {
+        if (!id_evento || !Nombre_eve || !Ponente || !Descripcion || !Registro || !Fecha || !Lugar || !N_horas || !T_horas || !hora_evento || !validacion) {
             res.json({
                 'alert': 'Faltan datos'
             })
@@ -93,6 +93,7 @@ app.post('/insertarevento', async(req, res) =>{
                 Nombre_eve,
                 Ponente,
                 Descripcion,
+                Registro,
                 Fecha,
                 Lugar,
                 N_horas,
@@ -130,12 +131,13 @@ app.get('/traereventos', async(req, res) => {
 
 //Ruta para actualizar un evento
 app.post('/actualizarevento', (req, res) => {
-    const { id_evento,Nombre_eve, Ponente, Descripcion, Fecha, Lugar, 
+    const { id_evento,Nombre_eve, Ponente, Descripcion, Registro, Fecha, Lugar, 
             N_horas,T_horas, hora_evento, validacion } = req.body
     const dataUpdate = {
         Nombre_eve,
         Ponente, 
-        Descripcion, 
+        Descripcion,
+        Registro, 
         Fecha, 
         Lugar, 
         N_horas,
