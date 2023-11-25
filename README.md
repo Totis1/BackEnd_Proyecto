@@ -12,3 +12,6 @@ Se implemento un auto-id para la tabla de eventos y usuarios, ademas se corrigie
 
 # Cambios 22/11
 Se implemento una ruta para el login
+
+# Cambios 25/11
+Se implemento un campo en eventos para registrar el nombre del usuario que registra el evento
