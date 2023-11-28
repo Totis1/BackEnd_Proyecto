@@ -5,7 +5,7 @@ const cors = require('cors')
 //Firebase
 const { initializeApp } = require("firebase/app")
 const { getFirestore, collection, getDoc, doc, getDocs, setDoc, updateDoc, deleteDoc, query, where } = require('firebase/firestore')
-const { getFirestore } = require('firebase/firestore')
+//const { getFirestore } = require('firebase/firestore')
 
 
 require('dotenv/config')
