@@ -122,46 +122,57 @@ app.post('/eliminarventa', async (req, res) => {
     }
 });
 
-
 // Ruta para insertar una venta
-app.post('/new-Ventas', async (req, res) => {
+app.post('/insertarusuario', async (req, res) => {
     try {
         const { Nombre_puesto, Nombre_producto, Precio_producto } = req.body;
 
-        if (!Nombre_puesto || !Nombre_producto || !Precio_producto) {
-            res.json({
-                'alert': 'Faltan datos'
-            });
-            return;
+        // Obtener la colección de puestos
+        const puestosCollection = collection(db, "puestos");
+
+        // Obtener el último ID de puesto
+        const lastPuestoQuery = query(puestosCollection, orderBy("idPuesto", "desc"), limit(1));
+        const lastPuestoSnapshot = await getDocs(lastPuestoQuery);
+
+        let idPuesto = 1;
+
+        if (!lastPuestoSnapshot.empty) {
+            const lastPuestoData = lastPuestoSnapshot.docs[0].data();
+            idPuesto = lastPuestoData.idPuesto + 1;
         }
 
-        // Obtiene el valor actual del contador de puestos
-        const countersCollection = collection(db, "counters");
-        const counterDoc = doc(countersCollection, "puestos");
-        const counterSnapshot = await getDoc(counterDoc);
-        const currentCount = counterSnapshot.data().count;
-
-        // Agrega el puesto con el ID incremental
-        const puestosCollection = collection(db, "puestos");
-        const puestoData = { idPuesto: currentCount + 1, Nombre_puesto };
-        const newPuestoDocRef = await addDoc(puestosCollection, puestoData);
-
-        // Actualiza el contador de puestos para el próximo registro
-        await updateDoc(counterDoc, { count: currentCount + 1 });
-
-        // Agrega el producto al puesto
-        const productosCollection = collection(db, "puestos", newPuestoDocRef.id, "productos");
-        const productoData = { Nombre_producto, Precio_producto };
-        await addDoc(productosCollection, productoData);
-
-        res.json({
-            'alert': 'success'
+        // Crear el documento del puesto
+        const puestoDoc = doc(puestosCollection, idPuesto.toString());
+        await setDoc(puestoDoc, {
+            idPuesto,
+            Nombre_puesto
         });
+
+        // Obtener la subcolección de productos del puesto
+        const productosCollection = collection(puestoDoc, 'productos');
+
+        // Agregar un producto al puesto si no existe un producto con el mismo nombre
+        const productoQuery = query(productosCollection, where("Nombre_producto", "==", Nombre_producto));
+        const productoSnapshot = await getDocs(productoQuery);
+
+        if (productoSnapshot.empty) {
+            // Agregar el producto al puesto
+            await addDoc(productosCollection, {
+                Nombre_producto,
+                Precio_producto
+            });
+
+            res.json({
+                'alert': 'success'
+            });
+        } else {
+            res.json({
+                'alert': 'Ya existe un producto con el mismo nombre en el puesto'
+            });
+        }
     } catch (error) {
         res.json({
-            'alert': error.message || 'Error al agregar la venta'
+            'alert': error.message || 'Error al agregar el producto al puesto'
         });
     }
 });
-
-
