@@ -15,3 +15,6 @@ Se implemento una ruta para el login
 
 # Cambios 25/11
 Se implemento un campo en eventos para registrar el nombre del usuario que registra el evento
+
+# Cambios 29/11
+Se implemento todas las rutas para el CRUD de los puestos, ademas de que se implementaron Rutas para filtrar mediante id para eventos y puestos
