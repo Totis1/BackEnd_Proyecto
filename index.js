@@ -99,7 +99,7 @@ app.get('/traerpuestos', async (req, res) => {
         res.json({
             'alert': 'error',
             'message': error.message || 'Error al obtener las ventas'
-        });
+        })
     }
 })
 
