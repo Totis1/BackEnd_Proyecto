@@ -4,7 +4,7 @@ const cors = require('cors')
 
 //Firebase
 const { initializeApp } = require("firebase/app")
-const { getFirestore, collection, getDoc, doc, getDocs, setDoc, updateDoc, deleteDoc, query, where } = require('firebase/firestore')
+const { getFirestore, collection, getDoc, doc, getDocs, setDoc, updateDoc, deleteDoc, query, where, orderBy, limit, addDoc } = require('firebase/firestore')
 const { getFirestore } = require('firebase/firestore')
 
 
@@ -40,6 +40,170 @@ app.use(cors(corsOptions))
 
 //Rutas
 
+//Ruta para filtrar con id eventos
+app.get('/filtrareventos', async(req,res) => {
+    const { id_Registro } = req.body
+    if (!id_Registro ) {
+        res.json({
+            'alert': 'Falta la ID'
+        })
+    }
+    const tabla = collection(db, "eventos")
+    const q = query(tabla, where("Registro", "==", id_Registro))
+    const querylog = await getDocs(q)
+    let returnData = []
+    querylog.forEach((doc) => {
+        returnData.push(doc.data())
+    })
+    res.json({
+        'alert': 'success',
+        'data': returnData
+    })
+})
+
+//Ruta ára filtrar con id Puestos
+app.get('/filtrarpuestos', async(req,res) => {
+    const { id_Buscar } = req.body
+    if (!id_Buscar ) {
+        res.json({
+            'alert': 'Falta la ID'
+        })
+    }
+    const tabla = collection(db, "puestos")
+    const q = query(tabla, where("id_dueño", "==", id_Buscar))
+    const querylog = await getDocs(q)
+    let returnData = []
+    querylog.forEach((doc) => {
+        returnData.push(doc.data())
+    })
+    res.json({
+        'alert': 'success',
+        'data': returnData
+    })
+})
+
+//Ruta para Puestos
+// Ruta para obtener todas las ventas
+app.get('/traerpuestos', async (req, res) => {
+    try {
+        const puestos = collection(db, "puestos")
+        const arreglo = await getDocs(puestos)
+        let returnData = []
+
+        arreglo.forEach(puestos => {
+            returnData.push(puestos.data())
+        })
+        res.json({
+            'alert': 'success',
+            'data': returnData
+        });
+    } catch (error) {
+        res.json({
+            'alert': 'error',
+            'message': error.message || 'Error al obtener las ventas'
+        });
+    }
+})
+
+
+// Ruta para actualizar una venta
+app.post('/actualizarpuesto', (req, res) => {
+        const { id_puesto, Nombre_puesto, productos, url_imagen } = req.body
+        const dataUpdate = {
+            Nombre_puesto, 
+            productos, 
+            url_imagen, 
+        }
+        if (!id_puesto || !Nombre_puesto || !productos || !url_imagen ) {
+            res.json({
+                'alert': 'Faltan datos'
+            })
+        }
+
+        // Actualizar la venta en Firebase
+        updateDoc(doc(db, "puestos", id_puesto), dataUpdate)
+            .then((response) => {
+                res.json({
+                    'alert' : 'success'
+                })
+            }).catch(error => {
+                res.json({
+                    'alert': 'error'
+                })
+            })
+})
+
+
+// Ruta para eliminar un puesto
+app.post('/eliminarpuesto', (req, res) => {
+        const { id_puesto } = req.body;
+        if (!id_puesto) {
+            res.json({
+                'alert': 'Falta el ID de la venta'
+            });
+            return;
+        }
+        // Eliminar la venta de Firebase
+        let puestoBorrado = doc(db, 'puestos', id_puesto);
+        deleteDoc(puestoBorrado)
+            .then((result) => {
+                res.json({
+                    'alert': 'Puesto Borrado'
+                })
+            }).catch((error) => {
+                res.json({
+                    'alert': 'error' || error.message
+                })
+            })
+})
+
+// Ruta para insertar un puesto
+app.post('/insertarpuesto', async (req, res) => {
+    const { Nombre_puesto, productos, url_imagen, id_dueño } = req.body
+    const puestos = collection(db, "puestos")
+    const lastidpuesto = await getDocs(puestos)
+    let id_puesto1 = ""
+    if(!lastidpuesto.empty){
+        let returnData = []
+        lastidpuesto.forEach((doc) => {
+            returnData = (doc.data())
+        })
+        id_puesto1 = Number (returnData.id_puesto) + 1
+    } else {
+        id_puesto1 = 1
+    }
+    const id_puesto = "" + id_puesto1
+    getDoc(doc(puestos, id_puesto)).then(puesto => {
+        if( !id_puesto || !Nombre_puesto || !productos || !url_imagen || !id_dueño){
+            res.json({
+                'alert' : 'Faltan datos'
+            })
+            return
+        }
+        if (puesto.exists()) {
+            res.json({
+                'alert': 'El puesto ya existe en la BD'
+            })
+        } else {
+            puestoData = {
+                id_puesto,
+                Nombre_puesto,
+                productos,
+                url_imagen,
+                id_dueño
+            }
+            setDoc(doc(puestos, id_puesto), puestoData).then(() => {
+                res.json({
+                    'alert' : 'success'
+                })
+            }).catch(error => {
+                res.json({
+                    'alert' : error
+                })
+            })
+        }
+    })
+})
 //---------------------------Rutas para eventos --------------------------------
 
 //Ruta para localizar ultima id 
@@ -206,27 +370,6 @@ app.post('/login', async(req, res) => {
                 return res.status(400).json({ 'alert': 'Contraseña Incorrecta' })
         }
     }
-    /*    
-    getDoc(doc(usuarios, Correo))
-        .then((usuario) => {
-            console.log(usuario.data())
-            if (!usuario.exists()){
-                return res.status(400).json({ 'alert' : 'Correo no registrado'})
-            } else {
-                //Aqui se puede encryptar y desencryptar
-                if (usuario.data().Contraseña === Contraseña && usuario.data().Rol == 'Usuario'){
-                    let data = usuario.data()
-                    res.json({
-                        'alert' : 'succes',
-                        Nombre : data.Nombre_usuario,
-                        Apellido : data.Apellido_usuario,
-                        Correo : data.Correo
-                    })
-                } else {
-                    return res.status(400).json({ 'alert': 'Datos Incorrectos' })
-                }
-            }
-        })*/
 })
 
 // Ruta para insertar un usuario
