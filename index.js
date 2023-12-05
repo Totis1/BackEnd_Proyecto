@@ -223,7 +223,7 @@ app.get('/recuperarid', async(req, res) => {
 //Ruta para insertar un evento
 app.post('/insertarevento', async(req, res) =>{
     const {Nombre_eve, Ponente, Descripcion, Registro, Fecha, Lugar, N_horas,T_horas,
-           hora_evento, validacion } = req.body
+           hora_evento, url_imagen } = req.body
     const eventos = collection (db, "eventos")
     const lastid = await getDocs(eventos)  
     let id_evento1 = ""
@@ -232,16 +232,13 @@ app.post('/insertarevento', async(req, res) =>{
         lastid.forEach((doc) => {
             returnData = (doc.data())
         })
-        console.log(returnData.id_evento)
         id_evento1 = Number(returnData.id_evento) + 1
     } else{
         id_evento1 = 1
-        console.log(id_evento1)
     }
     const id_evento = "" + id_evento1
-    
     getDoc(doc(eventos, id_evento)).then(evento =>{
-        if (!id_evento || !Nombre_eve || !Ponente || !Descripcion || !Registro || !Fecha || !Lugar || !N_horas || !T_horas || !hora_evento || !validacion) {
+        if (!id_evento || !Nombre_eve || !Ponente || !Descripcion || !Registro || !Fecha || !Lugar || !N_horas || !T_horas || !hora_evento || !url_imagen) {
             res.json({
                 'alert': 'Faltan datos'
             })
@@ -263,7 +260,8 @@ app.post('/insertarevento', async(req, res) =>{
                 N_horas,
                 T_horas,
                 hora_evento,
-                validacion
+                url_imagen,
+                validacion : 'En proceso'
             }
             //Se envia a Firebase
             setDoc(doc(eventos, id_evento), sendData).then(() =>{
@@ -293,10 +291,25 @@ app.get('/traereventos', async(req, res) => {
     })
 })
 
+//Ruta para traer los eventos que estan en "Aceptado"
+app.get('/traereventosaceptados', async (req, res) => {
+    const tabla = collection (db, "eventos")
+    const q = query(tabla, where("validacion", "==", "Aceptado"))
+    const querylog = await getDocs(q)
+    let returnData = []
+    querylog.forEach((doc) => {
+        returnData.push(doc.data())
+    })
+    res.json({
+        'alert' : 'success',
+        'data' : returnData
+    })
+})
+
 //Ruta para actualizar un evento
 app.post('/actualizarevento', (req, res) => {
     const { id_evento,Nombre_eve, Ponente, Descripcion, Registro, Fecha, Lugar, 
-            N_horas,T_horas, hora_evento, validacion } = req.body
+            N_horas,T_horas, hora_evento, validacion, url_imagen } = req.body
     const dataUpdate = {
         Nombre_eve,
         Ponente, 
@@ -307,7 +320,8 @@ app.post('/actualizarevento', (req, res) => {
         N_horas,
         T_horas,
         hora_evento,
-        validacion
+        validacion,
+        url_imagen
     }
     updateDoc(doc(db, "eventos", id_evento), dataUpdate)
         .then((response) => {
