@@ -18,3 +18,6 @@ Se implemento un campo en eventos para registrar el nombre del usuario que regis
 
 # Cambios 29/11
 Se implemento todas las rutas para el CRUD de los puestos, ademas de que se implementaron Rutas para filtrar mediante id para eventos y puestos
+
+# Cambios 05/12
+Se implemento una nueva ruta en eventos para que obtengan los eventos que esten en estado "Aceptado" ademas de cambiar cosas a las rutas eventos    
