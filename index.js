@@ -82,6 +82,20 @@ app.get('/filtrarpuestos', async(req,res) => {
 
 //Ruta para Puestos
 // Ruta para obtener todas las ventas
+app.get('/traerpuestosaceptados', async (req, res) => {
+    const tabla = collection (db, "puestos")
+    const q = query(tabla, where("validacion", "==", "Aceptado"))
+    const querylog = await getDocs(q)
+    let returnData = []
+    querylog.forEach((doc) => {
+        returnData.push(doc.data())
+    })
+    res.json({
+        'alert' : 'success',
+        'data' : returnData
+    })
+})
+
 app.get('/traerpuestos', async (req, res) => {
     try {
         const puestos = collection(db, "puestos")
@@ -106,13 +120,14 @@ app.get('/traerpuestos', async (req, res) => {
 
 // Ruta para actualizar una venta
 app.post('/actualizarpuesto', (req, res) => {
-        const { id_puesto, Nombre_puesto, productos, url_imagen } = req.body
+        const { id_puesto, Nombre_puesto, productos, url_imagen, validacion } = req.body
         const dataUpdate = {
             Nombre_puesto, 
             productos, 
-            url_imagen, 
+            url_imagen,
+            validacion 
         }
-        if (!id_puesto || !Nombre_puesto || !productos || !url_imagen ) {
+        if (!id_puesto || !Nombre_puesto || !productos || !url_imagen || !validacion ) {
             res.json({
                 'alert': 'Faltan datos'
             })
@@ -188,7 +203,8 @@ app.post('/insertarpuesto', async (req, res) => {
                 Nombre_puesto,
                 productos,
                 url_imagen,
-                id_dueño
+                id_dueño,
+                validacion : 'En proceso'
             }
             setDoc(doc(puestos, id_puesto), puestoData).then(() => {
                 res.json({

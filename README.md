@@ -21,3 +21,6 @@ Se implemento todas las rutas para el CRUD de los puestos, ademas de que se impl
 
 # Cambios 05/12
 Se implemento una nueva ruta en eventos para que obtengan los eventos que esten en estado "Aceptado" ademas de cambiar cosas a las rutas eventos    
+
+# Cambios 06/12
+Se implemento un cambio para validar los puestos, ademas de una ruta para mostrar los puestos validados con el estado "Aceptado"
