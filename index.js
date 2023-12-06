@@ -84,7 +84,7 @@ app.get('/filtrarpuestos', async(req,res) => {
 // Ruta para obtener todas las ventas
 app.get('/traerpuestosaceptados', async (req, res) => {
     const tabla = collection (db, "puestos")
-    const q = query(tabla, where("validacion", "==", "Aceptado"))
+    const q = query(tabla, where("validacion", "==", "102"))
     const querylog = await getDocs(q)
     let returnData = []
     querylog.forEach((doc) => {
@@ -204,7 +204,7 @@ app.post('/insertarpuesto', async (req, res) => {
                 productos,
                 url_imagen,
                 id_dueño,
-                validacion : 'En proceso'
+                validacion : '101'
             }
             setDoc(doc(puestos, id_puesto), puestoData).then(() => {
                 res.json({
@@ -277,7 +277,7 @@ app.post('/insertarevento', async(req, res) =>{
                 T_horas,
                 hora_evento,
                 url_imagen,
-                validacion : 'En proceso'
+                validacion : '101'
             }
             //Se envia a Firebase
             setDoc(doc(eventos, id_evento), sendData).then(() =>{
@@ -310,7 +310,7 @@ app.get('/traereventos', async(req, res) => {
 //Ruta para traer los eventos que estan en "Aceptado"
 app.get('/traereventosaceptados', async (req, res) => {
     const tabla = collection (db, "eventos")
-    const q = query(tabla, where("validacion", "==", "Aceptado"))
+    const q = query(tabla, where("validacion", "==", "102"))
     const querylog = await getDocs(q)
     let returnData = []
     querylog.forEach((doc) => {
@@ -367,6 +367,39 @@ app.post('/eliminarevento', (req, res) =>{
         })
 })
 
+//-----------------------------Ruta para Adminstradores -----------------------
+
+//Ruta de Login para Administradores
+app.post('/loginadmin', async(req, res) => {
+    const { Correo, Contraseña } = req.body
+    if (!Correo || !Contraseña ) {
+        res.json({
+            'alert': 'Faltan Datos'
+        })
+    }
+
+    const usuarios = collection(db, "usuarios")
+    const q = query(usuarios, where("Correo", "==", Correo))
+    const querylog = await getDocs(q)
+    if(querylog.empty){
+        return res.status(400).json({ 'alert': 'Correo Incorrecto' })
+    } else {
+        let returnData = []
+        querylog.forEach((doc) => {
+            returnData = (doc.data())
+        })
+        if (returnData.Contraseña === Contraseña && returnData.Rol == 'adm') {
+            res.json({
+                'alert': 'success',
+                'data': returnData
+            })
+        } else{
+            if (returnData.Contraseña != Contraseña)
+                return res.status(400).json({ 'alert': 'Contraseña Incorrecta' })
+        }
+    }
+})
+
 //-----------------------------Rutas para Usuarios-----------------------------
 
 //Ruta de Login 
@@ -388,7 +421,7 @@ app.post('/login', async(req, res) => {
         querylog.forEach((doc) => {
             returnData = (doc.data())
         })
-        if (returnData.Contraseña === Contraseña && returnData.Rol == 'Usuario') {
+        if (returnData.Contraseña === Contraseña && returnData.Rol == 'usu') {
             res.json({
                 'alert': 'success',
                 'data': returnData
@@ -469,14 +502,13 @@ app.get('/traerusuarios', async (req, res) => {
 // Ruta para actualizar un usuario
 app.post('/actualizarusuario', (req, res) => {
     const { id_usuario , Nombre_usuario, Apellido_usuario, Correo, Contraseña, 
-            NUA , Rol } = req.body
+            NUA } = req.body
     const dataUpdate = {
         Nombre_usuario,
         Apellido_usuario,
         Correo,
         Contraseña,
-        NUA,
-        Rol
+        NUA
     }
     updateDoc(doc(db, "usuarios", id_usuario), dataUpdate)
         .then((response) => {
